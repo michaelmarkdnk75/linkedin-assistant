@@ -5,7 +5,7 @@ Usage: cv_guard.py <lang DA|EN> <file_name> <file_url> <text_file> <drive_meta_j
 - drive_meta_json = output of Google Drive get_file_metadata for that id (proves the file exists:
   matching id, name, mimeType application/pdf, not trashed). Missing/unreadable -> blocked.
 - text must be template G (DA) / G-EN (EN) with only the name filled in, unless --ret
-  (Michael's own edited text); old long CV texts and banned wording are always blocked.
+  (Michael's own edited text) or --approved-text (a non-G text Michael approved by mail, e.g. CVF corrections); old long CV texts and banned wording are always blocked.
 Exit 0 = send allowed. Anything else = send NOTHING, status 'held: cv guard'."""
 import sys, json, re
 CV = {"DA": ("CV_Michael_Mark_DA.pdf", "1eca8BhjZHsxH1bq1OKvRWJRGbSfn7Cxq"),
@@ -16,7 +16,7 @@ GREET = {"DA": r"^Hej [^\n]+\n", "EN": r"^Hi [^\n]+\n"}
 BANNED = ["generisk", "generic", "_v3", "_v7", "_v8", "organisationsændring", "organisational change", "organizational change", "fritstillet"]
 def die(code, msg): print("BLOCKED:", msg); sys.exit(code)
 a = sys.argv[1:]
-ret = "--ret" in a; a = [x for x in a if x != "--ret"]
+ret = "--ret" in a or "--approved-text" in a; a = [x for x in a if x not in ("--ret", "--approved-text")]
 if len(a) != 5: die(2, __doc__)
 lang, name, url, tf, mf = a
 lang = lang.upper()
