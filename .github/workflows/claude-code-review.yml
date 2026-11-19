@@ -46,7 +46,6 @@ jobs:
             - Performance considerations
             - Security concerns
             - Test coverage
-            - check that the version number has been properly updated in plugin.json, every pr should increase the build version number by at least 0.0.0.1
 
             Use the repository's CLAUDE.md for guidance on style and conventions. Be constructive and helpful in your feedback.
 
