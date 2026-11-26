@@ -28,3 +28,6 @@ Retry once, then alternate live route, repair state file, recreate a broken trig
 
 ## Log and report
 Only if something was fixed: append one line to /mnt/project-files/linkedin-stats/logs/vagthund_<yyyy-mm-dd>.md (time | task | problem | fix | verified). Final line: "vagthund: <checked> checked, <fixed> fixed, <need Michael> need Michael".
+
+## Sheet guard (26/11-2026)
+Each session: read Google Sheet 1Zx_f3L2ISMvEI3UZyVRt8aQYqFa_e9THf_gN8Zxksgo tab Rekrutteringskontakter live (column N Status, M Seneste kontakt). If rows "Ikke kontaktet" exist while an invite/message gap exists, or no "Foreslået/Sendt" status was written in 2 days: run the outreach bucket (bucket_jobs.md "SHEET POOL FIRST") for the gap, log in linkedin-stats/logs. See outreach_rules.md §34 SHEET GUARD.
