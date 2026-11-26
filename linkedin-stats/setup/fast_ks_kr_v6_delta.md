@@ -1,0 +1,7 @@
+# Fast KS/KR routine v6 delta (26/11-2026, rule §62). Apply to trig_01VJzYkSiLgZqVuscBQ87Xvh (v5) by delete+recreate (update_trigger cannot edit fresh-session prompts).
+1. Title line: "v6 26/11: OWN-POST COMMENTS FIRST (§62)".
+2. Insert before GATE a STEP 0: reserve the first 25 daily scraping calls for own-post comment checks (other jobs stop at remaining_today <= 25). List own posts of last 30 days live (§53, skip KJ page rows). Tier A (<=7 days) every run, Tier B (8-30 days) first run of day, round-robin by oldest last_checked if budget short. get_post_comments page_size 30 served_from_cache false per post; for comments with replies_count>0 where Michael replied, read get_comment_replies and treat an unanswered later reply as new. Open comment = not by Michael, no Michael reply after it (§42), not already in replies/drafts_* as proposed/approved/sent. Any open comment fires the full run. Never skip for budget: if reserve empty, one mail per day "Kommentarer kunne ikke tjekkes live: kvote tom til 00:00". State watermark.json own_posts{urn:{posted_at,comments_count,last_checked}}; run line ends "x/y opslag tjekket live".
+3. G2 = result of STEP 0, never skipped (remove "skip if scraping < 10").
+4. FULL RUN rule list: add §62. KS delta step 3 = all open comments from STEP 0 (not only 7 days). KS send: like the comment first (§26).
+5. CEMATECH (C-E-M-A-T-E-C-H, Michael's employer): posts by the Cematech page/colleagues and their comments on his posts: like + comment proposed in the same run.
+Everything else unchanged from v5.
