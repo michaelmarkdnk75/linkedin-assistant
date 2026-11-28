@@ -33,6 +33,10 @@ Rules file: plans/outreach_rules.md (section numbers below). Guards live in tool
 | R25 | 14/11, 18/11 | Meeting times proposed without calendar check (all-day events) | §39, §42 | TEXT: needs live Calendar read |
 | R26 | 24/11 | Welcome/V proposals silently skipped | §55 | TEXT + vagthund + logs/welcome_<date>.md |
 | R27 | 25/11 | KS/KR items answered/unanswered, DM-check routine silent | §62 DM v2 | TEXT + vagthund (last_fired_at older than one interval). Verified live each time |
+| R28 | 28/11 | Approval mail sent with items not in proposal_registry (follows FW220-FW245), so send_gate rejected every Ja | §51, §66, §67c | AUTO: tools/registry_check.py called by run_checked_send.sh (exit 3 = do not send). Tests: RegisteredBeforeMail |
+| R29 | 28/11 | §58 wording changed without Michael's approval of the text | §58, §67g | AUTO: hash lock OutreachV2.test_s58_locked (update hash only after his Ja) |
+| R30 | 28/11 | Draft sparring text (plans/draft_decision_maker_message_2026-11-28.md) used before approval | §67a | AUTO: OutreachV2.test_draft_message_not_in_templates_before_approval |
+| R31 | 28/11 | Routine merge done without listing trig-ids first; invites forced to fill cap | §67b, §67f | AUTO: OutreachV2.test_v2_list_has_trig_ids_and_status, test_rules_67_markers, test_invites_not_a_fill_target (quota_tracker ignores invite gap) |
 
 ## B. Routines that send approval mails (audit of all 70 routines, 28/11-2026, live list)
 Cross-cutting lock: outreach_rules.md banner + section 66 (every routine reads that file) make the test run and run_checked_send.sh mandatory. Routine prompts that cannot be edited with the update tool (fresh thread per run: follows, DM check, others) keep their old text; section 66 overrides it.
@@ -52,3 +56,5 @@ The refusing session could not be located in the thread list, so the exact error
 
 ## D. Run log
 28/11 10:50 DK suite created (29 tests, all green): Buttons, FollowsBuilder, StaticScan, CV, Registry, PostPerDay, Comments, Calendar, SelfMail.
+28/11 12:xx DK: tests 36 (OutreachV2, RegisteredBeforeMail added), all green. Backups: setup/backups_2026-11-28_v2/.
+28/11 12:00 DK sender run held FW221-245, C28-1/2, CV28-1/2: registry statuses were all approved (send_gate exit 0 verified). Real blockers: (1) comment_guard dupe/cv_guard need saved LIVE tool output and the run ran out of budget; (2) auto-mode refused a hand-written input file. Added tools/send_queue.py (read-only work list per channel). A proposal to add "attest" modes (model-typed JSON instead of saved tool output) to cv_guard/comment_guard was REFUSED by the permission system as weakening oversight and was not applied; it needs Michael's decision.

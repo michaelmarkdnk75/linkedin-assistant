@@ -114,9 +114,46 @@ class Calendar(unittest.TestCase):         # R14 28/11 calendar delete
     def test_no_approval(self): self.assertEqual(run("calendar_guard.py", self.ev("HOLD: x", "Oprettet af Claude (HOLD-rutine)")).returncode, 2)
     def test_not_hold(self): self.assertEqual(run("calendar_guard.py", self.ev("Interview Telenor", "Oprettet af Claude"), "--approved-by-michael").returncode, 2)
 
+class SendQueue(unittest.TestCase):       # sender work list is read-only and lists only approved items
+    def test_lists_only_approved(self):
+        d = tempfile.mkdtemp(); os.makedirs(d + "/tools"); os.makedirs(d + "/plans"); shutil.copy(T + "/send_queue.py", d + "/tools/")
+        json.dump({"items": [{"id": "A", "person_key": "a", "channel": "follow", "status": "approved"}, {"id": "B", "person_key": "b", "channel": "cv", "status": "open"}]}, open(d + "/plans/pending_proposals.json", "w"))
+        r = subprocess.run([sys.executable, "-I", d + "/tools/send_queue.py"], capture_output=True, text=True)
+        self.assertEqual(r.returncode, 0); self.assertIn("A a", r.stdout); self.assertNotIn("B b", r.stdout)
+
 class SelfMail(unittest.TestCase):         # R12 26/11
     def test_ok(self): self.assertEqual(run("selfmail_check.py", tmp("s1.json", {"labelIds": ["SENT", "INBOX", "UNREAD"]})).returncode, 0)
     def test_sent_only(self): self.assertEqual(run("selfmail_check.py", tmp("s2.json", {"labelIds": ["SENT"]})).returncode, 1)
+
+class RegisteredBeforeMail(unittest.TestCase):   # R28 28/11 follows FW220-FW245 mailed unregistered
+    def test_missing_id_blocks(self):
+        reg = tmp("reg.json", {"items": [{"id": "A1", "person_key": "p", "person": "P", "channel": "follow", "status": "open"}]})
+        env = dict(os.environ, LI_REGISTRY=reg)
+        ok = subprocess.run([sys.executable, "-I", T + "/registry_check.py", "A1"], capture_output=True, text=True, env=env)
+        bad = subprocess.run([sys.executable, "-I", T + "/registry_check.py", "A1", "A2"], capture_output=True, text=True, env=env)
+        self.assertEqual(ok.returncode, 0); self.assertEqual(bad.returncode, 3); self.assertIn("A2", bad.stdout)
+    def test_wrapper_calls_registry_check(self):
+        self.assertIn("registry_check.py", Path(T + "/run_checked_send.sh").read_text())
+
+class OutreachV2(unittest.TestCase):        # R29-R32 28/11 outreach v2 (rules 67, setup/outreach_v2.md)
+    RULES = Path(ROOT + "/plans/outreach_rules.md").read_text(encoding="utf-8")
+    S58 = "05ba1ad866f48b3d74b83c0a80968df1093201afbf84e64729de26ae892c9e7f"
+    def test_s58_locked(self):
+        import hashlib
+        m = re.search(r"^## 58\..*?(?=^## 59\.)", self.RULES, re.S | re.M)
+        self.assertTrue(m); self.assertEqual(hashlib.sha256(m.group(0).encode()).hexdigest(), self.S58, "section 58 changed: needs Michael's approval of the text, then update S58 hash")
+    def test_rules_67_markers(self):
+        m = re.search(r"^## 67\..*", self.RULES, re.S | re.M); self.assertTrue(m)
+        for k in ("67a", "67b", "67c", "67d", "67e", "67f", "25 om ugen", "7-10 hverdage", "Ugemåling", "setup/outreach_v2.md"): self.assertIn(k, m.group(0))
+    def test_v2_list_has_trig_ids_and_status(self):
+        t = Path(ROOT + "/setup/outreach_v2.md").read_text(encoding="utf-8")
+        self.assertRegex(t, r"STATUS: (FORESLÅET|GODKENDT|UDFØRT)")
+        ids = set(re.findall(r"trig_[A-Za-z0-9]{24}", t)); self.assertGreaterEqual(len(ids), 8)
+    def test_draft_message_not_in_templates_before_approval(self):
+        tpl = Path(ROOT + "/plans/message_templates.md").read_text(encoding="utf-8")
+        self.assertNotIn("15 min til sparring om NIS2", tpl, "sparring text is a draft until Michael approves (then move to templates and delete this test)")
+    def test_invites_not_a_fill_target(self):   # static check: quota_tracker must not run in tests (it appends to the real quota_log.csv)
+        self.assertIn("if b!='send_connection_requests'", Path(T + "/quota_tracker.py").read_text())
 
 if __name__ == "__main__":
     try: unittest.main(verbosity=1)
